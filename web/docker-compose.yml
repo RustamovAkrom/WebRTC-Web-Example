@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: ./backend
+    container_name: webrtc-backend
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: webrtc-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
