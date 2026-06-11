@@ -1,6 +1,14 @@
 import { useEffect, useRef } from "react";
 
-export default function VideoTile({ stream, name, muted = false }) {
+export default function VideoTile({
+  stream,
+  name,
+  muted = false,
+  micOn = true,
+  camOn = true,
+  speaking = false,
+  hand = false,
+}) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -10,9 +18,22 @@ export default function VideoTile({ stream, name, muted = false }) {
   }, [stream]);
 
   return (
-    <div className="tile">
+    <div className={`tile ${speaking ? "speaking" : ""}`}>
       <video ref={ref} autoPlay playsInline muted={muted} />
-      <span className="tile-name">{name}</span>
+
+      {hand && <div className="tile-hand" title="Qo'l ko'tarilgan">✋</div>}
+
+      {/* Kamera o'chiq bo'lsa — avatar (ism bosh harfi) ko'rsatamiz */}
+      {!camOn && (
+        <div className="tile-avatar">
+          <span>{(name || "?").trim().charAt(0).toUpperCase()}</span>
+        </div>
+      )}
+
+      <span className="tile-name">
+        {!micOn && <span className="mic-off" title="Mikrofon o'chiq">🔇</span>}
+        {name}
+      </span>
     </div>
   );
 }

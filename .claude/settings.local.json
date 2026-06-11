@@ -3,7 +3,9 @@
     "allow": [
       "WebFetch(domain:medium.com)",
       "Bash(python -m py_compile sender.py reciever.py)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm run *)"
     ]
   }
 }

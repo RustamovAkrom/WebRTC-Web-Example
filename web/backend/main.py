@@ -38,8 +38,10 @@ app.add_middleware(
 
 manager = RoomManager()
 
-# Relay qilinadigan xabar turlari (faqat shular boshqa peer'ga uzatiladi).
+# Manzilli (bitta peer'ga) uzatiladigan WebRTC signaling xabarlari.
 RELAY_TYPES = {"offer", "answer", "ice"}
+# Xonadagi BARCHAGA tarqatiladigan xabarlar (chat, reaksiya, holat va h.k.).
+BROADCAST_TYPES = {"chat", "state", "reaction"}
 
 
 @app.get("/health")
@@ -84,6 +86,11 @@ async def signaling(websocket: WebSocket, room: str) -> None:
                 # "from" maydonini server o'zi qo'yadi (ishonchli manba).
                 msg["from"] = peer_id
                 await manager.send_to(room, target, msg)
+            elif mtype in BROADCAST_TYPES:
+                # Xonadagi barchaga tarqatamiz; manba ID va ismni server qo'yadi.
+                msg["from"] = peer_id
+                msg["name"] = manager.name_of(peer_id)
+                await manager.broadcast(room, msg, exclude=peer_id)
             # boshqa turdagi xabarlar e'tiborsiz qoldiriladi
     except WebSocketDisconnect:
         pass
