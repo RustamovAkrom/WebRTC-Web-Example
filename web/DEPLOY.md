@@ -6,7 +6,7 @@ quradi va FastAPI backend uni + signaling'ni bitta URL'dan beradi. Koyeb avtomat
 
 > Nega bitta konteyner? Bepul tarif odatda 1 ta servis beradi. Frontend + backend
 > birga → bitta servis yetarli.
-
+s
 ---
 
 ## 1. Mahalliy sinov (deploy'dan oldin, ixtiyoriy)
@@ -70,9 +70,21 @@ Bir-ikki daqiqada Koyeb sizga manzil beradi, masalan:
 
 ## Cheklov va keyingi qadam
 
+- **Ma'lumotlar bazasi (YANGI):** ilova endi akkaunt/host tizimi uchun **PostgreSQL**
+  talab qiladi. Koyeb'da boshqariladigan Postgres ulang va quyidagi muhit
+  o'zgaruvchilarini bering:
+  - `DATABASE_URL` — masalan `postgresql+asyncpg://user:pass@host:5432/db`
+  - `JWT_SECRET` — tasodifiy uzun kalit (`python -c "import secrets;print(secrets.token_urlsafe(48))"`)
+  - `ENVIRONMENT=prod`, `COOKIE_SECURE=true`, `CORS_ORIGINS=https://sizning-domeningiz`
+  - Migratsiya konteyner startida avtomatik o'tadi (`alembic upgrade head`).
+  - DB ulanmasa ham mehmon signaling ishlaydi, lekin login/akkaunt ishlamaydi.
+- **Lokal to'liq stack:** `cd web && copy backend\.env.example .env` (qiymatlarni
+  o'zgartiring) so'ng `docker compose up --build`. Bu db + migrate + backend + frontend
+  ni ko'taradi (frontend: http://localhost:8080).
 - **Scale-to-zero:** Koyeb free trafik bo'lmasa uxlaydi, birinchi so'rovda 0.2–5s da
-  uyg'onadi (deyarli sezilmaydi).
-- **STUN-only:** hozir faqat Google STUN ishlatilyapti. Aksariyat tarmoqlarda ishlaydi,
-  lekin qattiq NAT/firewall ortidagi foydalanuvchilar ulanolmasa — `frontend/src/hooks/
-  useWebRTC.js` dagi `ICE_SERVERS` ga bepul **TURN** (ExpressTURN / Metered) qo'shing.
+  uyg'onadi.
+- **STUN-only:** hozir faqat Google STUN. Qattiq NAT ortidagilar ulanolmasa —
+  `frontend/src/hooks/useWebRTC.js` dagi `ICE_SERVERS` ga bepul **TURN** qo'shing.
 - **Mesh cheklovi:** 2–4 ishtirokchi qulay; kattaroq guruh uchun SFU kerak.
+- **Bitta instance:** signaling holati xotirada — backend'ni faqat 1 nusxada ishlating
+  (gorizontal scaling uchun Redis kerak bo'ladi).

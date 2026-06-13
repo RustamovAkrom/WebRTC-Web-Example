@@ -17,11 +17,20 @@ import { Signaling } from "../lib/signaling.js";
 //   { urls: "turn:turn.example.com:3478", username: "user", credential: "pass" }
 const ICE_SERVERS = [{ urls: "stun:stun.l.google.com:19302" }];
 
-export function useWebRTC(room, name) {
+export function useWebRTC(room, name, getToken = null) {
   const [localStream, setLocalStream] = useState(null);
   // peers: { [peerId]: { name, stream } }
   const [peers, setPeers] = useState({});
-  const [status, setStatus] = useState("connecting"); // connecting | live | error
+  const [status, setStatus] = useState("connecting"); // connecting | live | error | removed
+
+  // --- Host / spotlight / lock holati ---
+  const [selfPeerId, setSelfPeerId] = useState(null);
+  const [hostPeerId, setHostPeerId] = useState(null);
+  const [ownerUserId, setOwnerUserId] = useState(null);
+  const [roomSpotlightPeerId, setRoomSpotlightPeerId] = useState(null);
+  const [locked, setLocked] = useState(false);
+  const [forcedMuted, setForcedMuted] = useState(false);
+  const [removedReason, setRemovedReason] = useState(null);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [sharing, setSharing] = useState(false);
@@ -229,6 +238,12 @@ export function useWebRTC(room, name) {
         case "welcome": {
           // Xonadagi mavjud peer'larga BIZ offer yuboramiz (yangi kelgan = tashabbuskor).
           liveRef.current = true;
+          setSelfPeerId(msg.peerId);
+          if (msg.hostPeerId !== undefined) setHostPeerId(msg.hostPeerId);
+          if (msg.ownerUserId !== undefined) setOwnerUserId(msg.ownerUserId);
+          if (msg.spotlightPeerId !== undefined)
+            setRoomSpotlightPeerId(msg.spotlightPeerId);
+          if (msg.locked !== undefined) setLocked(Boolean(msg.locked));
           // Mavjud peer'larni ro'yxatga qo'shamiz (stream keyinroq keladi).
           setPeers((prev) => {
             const next = { ...prev };
@@ -353,11 +368,48 @@ export function useWebRTC(room, name) {
           });
           break;
         }
+        case "host-changed": {
+          setHostPeerId(msg.hostPeerId);
+          break;
+        }
+        case "spotlight": {
+          setRoomSpotlightPeerId(msg.peerId ?? null);
+          break;
+        }
+        case "lock-changed": {
+          setLocked(Boolean(msg.locked));
+          break;
+        }
+        case "force-muted": {
+          // Host bizni majburan o'chirdi — mikrofonni o'chiramiz va holatni e'lon qilamiz.
+          const track = localStreamRef.current?.getAudioTracks()[0];
+          if (track && track.enabled) {
+            track.enabled = false;
+            applyMic(false);
+          }
+          setForcedMuted(true);
+          broadcastState();
+          break;
+        }
+        case "kicked": {
+          setRemovedReason("Sizni host xonadan chiqardi.");
+          setStatus("removed");
+          break;
+        }
+        case "rejected": {
+          setRemovedReason(
+            msg.reason === "locked"
+              ? "Bu xona qulflangan — kirish taqiqlangan."
+              : "Xonaga kirib bo'lmadi."
+          );
+          setStatus("removed");
+          break;
+        }
         default:
           break;
       }
     },
-    [createPeer, flushPendingIce, broadcastState, removeAnalyser, beep]
+    [createPeer, flushPendingIce, broadcastState, removeAnalyser, beep, applyMic]
   );
 
   // --- Ishga tushirish: media olish + signaling ulash ---
@@ -458,7 +510,17 @@ export function useWebRTC(room, name) {
         .catch(() => {});
 
       // 2. Signaling — media bor-yo'qligidan qat'i nazar ulaymiz.
-      const signaling = new Signaling(room, name);
+      // Login bo'lganlar uchun qisqa muddatli WS ticket olamiz (mehmon uchun null).
+      let token = null;
+      if (getToken) {
+        try {
+          token = await getToken();
+        } catch {
+          token = null;
+        }
+      }
+      if (cancelled) return;
+      const signaling = new Signaling(room, name, token);
       signalingRef.current = signaling;
       signaling.onMessage = handleMessage;
       signaling.onClose = () => {
@@ -502,6 +564,7 @@ export function useWebRTC(room, name) {
     if (track) {
       track.enabled = !track.enabled;
       applyMic(track.enabled);
+      if (track.enabled) setForcedMuted(false); // o'zini qayta yoqsa, belgi ketadi
       broadcastState();
     }
   }, [applyMic, broadcastState]);
@@ -570,6 +633,23 @@ export function useWebRTC(room, name) {
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     setPeers({});
     setStatus("left");
+  }, []);
+
+  // --- Host komandalar (faqat host bo'lsa server qabul qiladi) ---
+  const hostForceMute = useCallback((target) => {
+    signalingRef.current?.send({ type: "host:force-mute", target });
+  }, []);
+  const hostKick = useCallback((target) => {
+    signalingRef.current?.send({ type: "host:kick", target });
+  }, []);
+  const hostSpotlight = useCallback((target) => {
+    signalingRef.current?.send({ type: "host:spotlight", target });
+  }, []);
+  const hostTransfer = useCallback((target) => {
+    signalingRef.current?.send({ type: "host:transfer", target });
+  }, []);
+  const hostLock = useCallback((value) => {
+    signalingRef.current?.send({ type: "host:lock", locked: value });
   }, []);
 
   // --- Chat: xabar yuborish (o'zimizga darhol qo'shamiz, boshqalarga signaling orqali) ---
@@ -689,5 +769,19 @@ export function useWebRTC(room, name) {
     toggleCam,
     shareScreen,
     leave,
+    // Host / spotlight / lock
+    selfPeerId,
+    hostPeerId,
+    ownerUserId,
+    roomSpotlightPeerId,
+    locked,
+    forcedMuted,
+    removedReason,
+    isHost: Boolean(selfPeerId && hostPeerId && selfPeerId === hostPeerId),
+    hostForceMute,
+    hostKick,
+    hostSpotlight,
+    hostTransfer,
+    hostLock,
   };
 }

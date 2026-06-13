@@ -5,12 +5,14 @@
 
 export class Signaling {
   /**
-   * @param {string} room  - xona ID
-   * @param {string} name  - foydalanuvchi ismi
+   * @param {string} room   - xona ID
+   * @param {string} name   - foydalanuvchi ismi
+   * @param {string|null} token - ixtiyoriy WS ticket (login bo'lganlar uchun)
    */
-  constructor(room, name) {
+  constructor(room, name, token = null) {
     this.room = room;
     this.name = name;
+    this.token = token;
     this.ws = null;
     this.onMessage = () => {};
     this.onOpen = () => {};
@@ -20,9 +22,12 @@ export class Signaling {
   connect() {
     // Bir xil origin orqali ulanamiz (dev'da Vite proksi, prod'da nginx proksi qiladi).
     const proto = window.location.protocol === "https:" ? "wss" : "ws";
+    const tokenPart = this.token
+      ? `&token=${encodeURIComponent(this.token)}`
+      : "";
     const url = `${proto}://${window.location.host}/ws/${encodeURIComponent(
       this.room
-    )}?name=${encodeURIComponent(this.name)}`;
+    )}?name=${encodeURIComponent(this.name)}${tokenPart}`;
 
     this.ws = new WebSocket(url);
     this.ws.onopen = () => this.onOpen();

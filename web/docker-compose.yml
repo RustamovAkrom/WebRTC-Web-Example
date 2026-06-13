@@ -1,9 +1,63 @@
+# WebRTC video-chat — to'liq stack (production-grade).
+#
+# Xizmatlar:
+#   db        — PostgreSQL (ma'lumotlar saqlanadigan volume bilan)
+#   migrate   — bir martalik: `alembic upgrade head` (db tayyor bo'lgach)
+#   backend   — FastAPI signaling + REST API + auth
+#   frontend  — nginx: SPA beradi va /ws, /api ni backendga proksi qiladi
+#
+# Sirlar `.env` faylidan keladi (compose avtomatik o'qiydi). Namuna: backend/.env.example
+
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: webrtc-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-app}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  migrate:
+    build: ./backend
+    container_name: webrtc-migrate
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@db:5432/${POSTGRES_DB:-app}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   backend:
     build: ./backend
     container_name: webrtc-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@db:5432/${POSTGRES_DB:-app}
+      JWT_SECRET: ${JWT_SECRET:-dev-insecure-secret-change-me}
+      ENVIRONMENT: ${ENVIRONMENT:-dev}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      PERSIST_CHAT: ${PERSIST_CHAT:-false}
     ports:
       - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').getcode()==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   frontend:
@@ -14,3 +68,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  pgdata:
