@@ -15,6 +15,7 @@ ishonmaydi).
 from __future__ import annotations
 
 import os
+import subprocess
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -37,10 +38,40 @@ from rooms import RoomManager
 settings = get_settings()
 
 
+async def run_migration():
+    """Database migratsiyasini ishga tushirish."""
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        print("⚠️  DATABASE_URL topilmadi, migration o'tkazib yuboriladi")
+        return
+
+    try:
+        print("🔄 Running database migrations...")
+        result = subprocess.run(
+            ["alembic", "upgrade", "head"],
+            cwd="/app/backend",
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env={**os.environ, "DATABASE_URL": db_url}
+        )
+        if result.returncode == 0:
+            print("✅ Database migrations completed successfully")
+        else:
+            print(f"⚠️  Migration stderr: {result.stderr}")
+            print(f"⚠️  Migration stdout: {result.stdout}")
+    except Exception as e:
+        print(f"⚠️  Migration failed: {e}. Server continues without migrations.")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
     settings.validate_for_prod()
+
+    # Migration ishga tushirish
+    await run_migration()
+
     yield
     await engine.dispose()
 

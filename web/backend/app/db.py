@@ -20,22 +20,30 @@ from app.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(
-    settings.database_url,
-    pool_size=5,
-    max_overflow=10,
-    pool_pre_ping=True,
-    future=True,
-)
+# Database URL yo'q bo'lsa, engine yaratilmaydi (signaling P2P uchun shart emas)
+if settings.database_url:
+    engine = create_async_engine(
+        settings.database_url,
+        pool_size=5,
+        max_overflow=10,
+        pool_pre_ping=True,
+        future=True,
+    )
+    SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+else:
+    engine = None
+    SessionLocal = None
 
-SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+print(f"📊 Database: {'configured' if settings.database_url else 'not configured (signaling only)'}")
 
 
 class Base(DeclarativeBase):
-    """Barcha ORM modellar uchun umumiy baza."""
+    """Barcha ORM modellar uchun baza."""
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
     """FastAPI dependency: har so'rov uchun bitta sessiya."""
+    if SessionLocal is None:
+        raise RuntimeError("Database not configured. Set DATABASE_URL environment variable.")
     async with SessionLocal() as session:
         yield session

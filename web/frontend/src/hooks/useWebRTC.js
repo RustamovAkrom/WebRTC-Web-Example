@@ -12,10 +12,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Signaling } from "../lib/signaling.js";
 
-// STUN serveri NAT ortidagi public manzilni aniqlaydi. Turli tarmoqlar orasida
-// ishonchli ulanish uchun bu yerga TURN server ham qo'shish mumkin:
-//   { urls: "turn:turn.example.com:3478", username: "user", credential: "pass" }
-const ICE_SERVERS = [{ urls: "stun:stun.l.google.com:19302" }];
+// STUN serveri NAT ortidagi public manzilni aniqlaydi.
+// TURN server turli tarmoqlar (uy ↔ ofis, mobil internet ↔ WiFi) orasida
+// ishonchli ulanish uchun MAJBURIY.
+const ICE_SERVERS = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" },
+  { urls: "stun:stun2.l.google.com:19302" },
+  { urls: "stun:stun3.l.google.com:19302" },
+  { urls: "stun:stun4.l.google.com:19302" },
+  // Free TURN server (test uchun) - real production'da o'zingizning TURN serveringiz kerak
+  // { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+  // { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+];
 
 export function useWebRTC(room, name, getToken = null) {
   const [localStream, setLocalStream] = useState(null);
@@ -785,3 +794,4 @@ export function useWebRTC(room, name, getToken = null) {
     hostLock,
   };
 }
+

@@ -1,5 +1,54 @@
+# Node modules (frontend build jarayonida qayta o'rnatiladi)
 **/node_modules
+
+# Build artifacts (frontend build'da qayta yaratiladi)
 **/dist
+
+# Python cache
 **/__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
 **/.venv
+**/venv
+**/ENV
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Environment files (secrets!)
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# Documentation (build uchun kerak emas)
+*.md
+docs/
+
+# Test/coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Railway config (local uchun)
+# railway.json
+
+# GitHub workflows
+.github/
+
+# Docker compose (build kontekstida kerak emas)
+docker-compose*.yml
+
+# Backend static (build jarayonida yaratiladi)
 backend/static

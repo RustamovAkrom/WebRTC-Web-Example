@@ -21,8 +21,9 @@ class Settings(BaseSettings):
     environment: str = "dev"
 
     # PostgreSQL ulanish manzili (async driver).
-    # Masalan: postgresql+asyncpg://app:app@db:5432/app
-    database_url: str = "postgresql+asyncpg://app:app@localhost:5432/app"
+    # Railway'da DATABASE_URL avtomatik beriladi.
+    # Default: localhost (dev mode uchun).
+    database_url: str | None = None
 
     # JWT imzo kaliti. PROD'da albatta o'rnatilishi shart (pastdagi tekshiruv).
     jwt_secret: str = "dev-insecure-secret-change-me"
@@ -56,6 +57,8 @@ class Settings(BaseSettings):
             "http://localhost:8080",
             "http://127.0.0.1:5173",
             "http://127.0.0.1:8080",
+            "https://web-production-5ff6b.up.railway.app",  # Railway production
+            "wss://web-production-5ff6b.up.railway.app",
         ]
 
     def validate_for_prod(self) -> None:
