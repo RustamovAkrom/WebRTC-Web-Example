@@ -47,9 +47,10 @@ async def run_migration():
 
     try:
         print("🔄 Running database migrations...")
+        # Dockerfile'da backend fayllar /app/ da
         result = subprocess.run(
             ["alembic", "upgrade", "head"],
-            cwd="/app/backend",
+            cwd="/app",
             capture_output=True,
             text=True,
             timeout=30,
