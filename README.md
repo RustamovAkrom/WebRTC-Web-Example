@@ -90,6 +90,36 @@ cd web/frontend && npm install && npm run dev      # http://localhost:5173
 cd web && docker compose up --build                # http://localhost:8080
 ```
 
+### 🚀 Railway Deploy (Production)
+
+Full-stack loyihani **bitta komanda** bilan Railway'da deploy qilish:
+
+```powershell
+# 1. Railway CLI o'rnatish
+npm install -g @railway/cli
+
+# 2. Login
+railway login
+
+# 3. Deploy (web/ papkasidan)
+cd web
+railway up
+```
+
+Yoki PowerShell script orqali:
+
+```powershell
+cd web
+.\deploy.ps1
+```
+
+📖 **Batafsil**: [web/RAILWAY_DEPLOY.md](web/RAILWAY_DEPLOY.md)
+
+**PostgreSQL ulash** - Railway dashboard'da:
+1. Project → Add Service → PostgreSQL
+2. Variables → DATABASE_URL avtomatik qo'shiladi
+3. CORS_ORIGINS, JWT_SECRET sozlang
+
 Batafsil: [web/README.md](web/README.md) va [docs/07-web-fullstack.md](docs/07-web-fullstack.md).
 
 ---
