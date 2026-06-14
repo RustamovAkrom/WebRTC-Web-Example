@@ -88,6 +88,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# Xavfsizlik sarlavhalari — har bir HTTP javobga qo'shiladi.
+# CSP SPA (tashqi hashed JS/CSS) va WebSocket signaling (ws/wss) bilan mos.
+_CSP = (
+    "default-src 'self'; "
+    "base-uri 'self'; "
+    "object-src 'none'; "
+    "frame-ancestors 'none'; "
+    "img-src 'self' data: blob:; "
+    "media-src 'self' blob:; "
+    "font-src 'self' data:; "
+    "style-src 'self' 'unsafe-inline'; "
+    "script-src 'self'; "
+    "connect-src 'self' ws: wss:"
+)
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Permissions-Policy", "camera=(self), microphone=(self), geolocation=()")
+    response.headers.setdefault("Content-Security-Policy", _CSP)
+    # HSTS faqat prod'da (HTTPS) — mahalliy HTTP'ni buzmasligi uchun.
+    if settings.is_prod:
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+        )
+    return response
+
+
 # Rate limiting
 app.state.limiter = limiter
 

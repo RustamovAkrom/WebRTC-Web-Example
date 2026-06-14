@@ -1,166 +1,162 @@
+// RegisterPage — ro'yxatdan o'tish. httpOnly cookie sessiyasi (AuthContext orqali);
+// backend UserCreate kontrakti: username, display_name (majburiy), password, email (ixtiyoriy).
+// Eski sahifa display_name yubormas edi (registratsiya 422 bilan buzilardi) — tuzatildi.
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import Header from "../components/Header.jsx";
+import Footer from "../components/Footer.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const { register } = useAuth();
+  const [form, setForm] = useState({
+    display_name: "",
     username: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    confirm: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (formData.password !== formData.confirmPassword) {
+    if (form.password !== form.confirm) {
       setError("Parollar mos kelmaydi");
       return;
     }
-
-    if (formData.password.length < 8) {
+    if (form.password.length < 8) {
       setError("Parol kamida 8 ta belgidan iborat bo'lishi kerak");
       return;
     }
 
     setLoading(true);
-
     try {
-      const { confirmPassword, ...registerData } = formData;
-      const response = await axios.post("/api/auth/register", registerData);
-      if (response.data.access_token) {
-        localStorage.setItem("access_token", response.data.access_token);
-        navigate("/");
-      }
+      await register({
+        username: form.username.trim(),
+        display_name: form.display_name.trim() || form.username.trim(),
+        email: form.email.trim() || null,
+        password: form.password,
+      });
+      navigate("/");
     } catch (err) {
-      setError(err.response?.data?.detail || "Ro'yxatdan o'tishda xatolik yuz berdi");
+      setError(err.message || "Ro'yxatdan o'tishda xatolik yuz berdi");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4 py-8">
-      <div className="max-w-md w-full">
-        {/* Back to Home */}
-        <div className="mb-8 text-center">
-          <Link
-            to="/"
-            className="text-gray-400 hover:text-green-500 transition-colors inline-flex items-center gap-2"
-          >
-            ← Bosh sahifaga qaytish
-          </Link>
-        </div>
-
-        {/* Register Card */}
-        <div className="card">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">Hisob yarating</h1>
-            <p className="text-gray-400">Bepul va 2 daqiqada</p>
-          </div>
-
-          {error && (
-            <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg mb-6">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-white mb-2 font-medium">Foydalanuvchi nomi</label>
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                minLength={3}
-                className="input-field"
-                placeholder="Ismingiz"
-              />
+    <div className="page-shell">
+      <Header />
+      <main className="auth-page">
+        <div className="auth-card">
+          <div className="card">
+            <div className="auth-head">
+              <h1>Hisob yarating</h1>
+              <p>Bepul va bir daqiqada</p>
             </div>
 
-            <div>
-              <label className="block text-white mb-2 font-medium">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="input-field"
-                placeholder="example@email.com"
-              />
-            </div>
+            {error && <div className="auth-alert">{error}</div>}
 
-            <div>
-              <label className="block text-white mb-2 font-medium">Parol</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength={8}
-                className="input-field"
-                placeholder="********"
-              />
-              <p className="text-gray-400 text-sm mt-1">Kamida 8 ta belgi</p>
-            </div>
+            <form className="auth-form" onSubmit={onSubmit}>
+              <label className="field">
+                <span>Ko'rinadigan ism</span>
+                <input
+                  name="display_name"
+                  value={form.display_name}
+                  onChange={onChange}
+                  placeholder="Masalan: Akrom"
+                  autoComplete="name"
+                  autoFocus
+                />
+              </label>
 
-            <div>
-              <label className="block text-white mb-2 font-medium">Parolni tasdiqlang</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                minLength={8}
-                className="input-field"
-                placeholder="********"
-              />
-            </div>
+              <label className="field">
+                <span>Foydalanuvchi nomi</span>
+                <input
+                  name="username"
+                  value={form.username}
+                  onChange={onChange}
+                  placeholder="username"
+                  autoComplete="username"
+                  required
+                  minLength={3}
+                />
+              </label>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Yuklanmoqda..." : "Ro'yxatdan o'tish"}
-            </button>
-          </form>
+              <label className="field">
+                <span>Email (ixtiyoriy)</span>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={onChange}
+                  placeholder="email@example.com"
+                  autoComplete="email"
+                />
+              </label>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-400">
+              <label className="field">
+                <span>Parol</span>
+                <input
+                  type="password"
+                  name="password"
+                  value={form.password}
+                  onChange={onChange}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                />
+                <span className="field-hint">Kamida 8 ta belgi</span>
+              </label>
+
+              <label className="field">
+                <span>Parolni tasdiqlang</span>
+                <input
+                  type="password"
+                  name="confirm"
+                  value={form.confirm}
+                  onChange={onChange}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                />
+              </label>
+
+              <button
+                type="submit"
+                className="btn btn-primary btn-block btn-lg"
+                disabled={loading || !form.username.trim() || !form.password}
+              >
+                {loading ? "Yaratilmoqda…" : "Ro'yxatdan o'tish"}
+              </button>
+            </form>
+
+            <p className="auth-alt">
               Hisobingiz bormi?{" "}
-              <Link to="/login" className="text-green-500 hover:text-green-400 font-medium">
+              <Link to="/login" className="btn-link">
                 Kirish
               </Link>
             </p>
           </div>
-        </div>
 
-        {/* Terms */}
-        <div className="mt-6 text-center text-sm text-gray-500">
-          Ro'yxatdan o'tish bilan siz{" "}
-          <a href="#" className="text-green-500 hover:underline">Foydalanish shartlari</a>
-          {" "}va{" "}
-          <a href="#" className="text-green-500 hover:underline">Maxfiylik siyosatiga</a>
-          {" "}rozilik bildirasiz.
+          <p className="auth-alt">
+            <Link to="/" className="btn-link">
+              ← Mehmon sifatida davom etish
+            </Link>
+          </p>
         </div>
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 }

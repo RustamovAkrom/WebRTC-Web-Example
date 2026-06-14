@@ -11,11 +11,9 @@ import ParticipantsPanel from "./ParticipantsPanel.jsx";
 import ReactionsOverlay from "./ReactionsOverlay.jsx";
 import SettingsMenu from "./SettingsMenu.jsx";
 
-// Joriy xonaning to'liq taklif havolasi (?room=... bilan).
+// Joriy xonaning to'liq taklif havolasi (/room/<id> yo'liga mos).
 function inviteLink(room) {
-  return `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(
-    room
-  )}`;
+  return `${window.location.origin}/room/${encodeURIComponent(room)}`;
 }
 
 function CopyLinkButton({ room }) {
@@ -44,11 +42,11 @@ function CopyLinkButton({ room }) {
   );
 }
 
-export default function Room({ room, name: initialName, onLeave }) {
+export default function Room({ room, name: initialName, onLeave, initialCamOn = true, initialMicOn = true }) {
   const [name, setName] = useState(initialName || "");
   const { getWsTicket, user } = useAuth();
   const { resolved, toggleTheme } = useTheme();
-  const rtc = useWebRTC(room, name, getWsTicket);
+  const rtc = useWebRTC(room, name, getWsTicket, { initialCamOn, initialMicOn });
 
   const [chatOpen, setChatOpen] = useState(false);
   const [peopleOpen, setPeopleOpen] = useState(false);

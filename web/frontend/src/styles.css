@@ -690,3 +690,394 @@ body {
   .topbar-right { gap: 0.35rem; }
   .chat-toggle, .copy-link { padding: 0.4rem 0.55rem; }
 }
+
+/* =========================================================================
+   Umumiy UI — landing / auth / lobby uchun token-asosli komponentlar.
+   Tailwind faqat rangsiz layout (flex/grid/spacing) uchun; ranglar — token.
+   ========================================================================= */
+
+/* --- Sahifa karkasi (footer pastga yopishadi) --- */
+.page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.page-shell main { flex: 1; }
+
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* --- Sayt sarlavhasi --- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--surface-1);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border-bottom: 1px solid var(--border);
+}
+.site-header .header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 64px;
+}
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand-logo .brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: var(--text-on-accent);
+  font-size: 1rem;
+  box-shadow: var(--glow);
+}
+.nav-actions { display: flex; align-items: center; gap: 0.6rem; }
+.nav-user { color: var(--muted); font-size: 0.88rem; }
+
+/* --- Ikona tugma (theme toggle va h.k.) --- */
+.icon-btn {
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  color: var(--text);
+  font-size: 1rem;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.icon-btn:hover { border-color: var(--border-strong); background: var(--surface-2); }
+
+/* --- Tugmalar --- */
+.btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  padding: 0.62rem 1.05rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transition: transform 0.1s, opacity 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none; }
+.btn-block { width: 100%; }
+.btn-lg { padding: 0.8rem 1.4rem; font-size: 1rem; border-radius: 12px; }
+
+.btn-primary {
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  color: var(--text-on-accent);
+  box-shadow: var(--glow);
+}
+.btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
+
+.btn-ghost {
+  background: var(--glass-bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+.btn-ghost:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface-2); }
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0;
+  text-decoration: none;
+}
+.btn-link:hover { text-decoration: underline; }
+
+/* --- Maydon (label + input) --- */
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+.field > span { font-size: 0.82rem; color: var(--muted); font-weight: 500; }
+.field input,
+.input-field {
+  width: 100%;
+  padding: 0.72rem 0.85rem;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface-0);
+  color: var(--text);
+  font-size: 0.95rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field input::placeholder,
+.input-field::placeholder { color: var(--muted); opacity: 0.8; }
+.field input:focus,
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--success-soft);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* --- Karta --- */
+.card {
+  background: var(--surface-1);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.6rem;
+  box-shadow: var(--shadow-1);
+}
+
+/* --- Hero (landing) --- */
+.hero { padding: 4.5rem 0 3rem; text-align: center; }
+.hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  margin-bottom: 1.4rem;
+}
+.hero .eyebrow .dot { color: var(--success); }
+.hero h1 {
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  margin-bottom: 1.1rem;
+}
+.hero h1 .grad {
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p.lead {
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  color: var(--muted);
+  max-width: 620px;
+  margin: 0 auto 2rem;
+}
+.hero-form {
+  display: flex;
+  gap: 0.6rem;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.hero-form input { flex: 1; }
+
+/* --- Bo'lim sarlavhasi --- */
+.section { padding: 3rem 0; }
+.section-title {
+  text-align: center;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.6rem;
+}
+.section-sub { text-align: center; color: var(--muted); margin-bottom: 2.4rem; }
+
+/* --- Xususiyatlar gridi --- */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.1rem;
+}
+.feature-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.feature-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+.feature-card .ico {
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--border);
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+.feature-card h3 { font-size: 1.1rem; font-weight: 650; margin-bottom: 0.4rem; }
+.feature-card p { color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
+
+/* --- Qadamlar --- */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1.4rem;
+}
+.step { text-align: center; }
+.step .num {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 0.9rem;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-on-accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: var(--glow);
+}
+.step h4 { font-size: 1rem; font-weight: 650; margin-bottom: 0.3rem; }
+.step p { color: var(--muted); font-size: 0.86rem; }
+
+/* --- CTA bloki --- */
+.cta-card {
+  text-align: center;
+  background:
+    radial-gradient(600px 200px at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
+    var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 3rem 1.5rem;
+}
+.cta-card h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: 0.6rem; }
+.cta-card p { color: var(--muted); margin-bottom: 1.6rem; }
+
+/* --- Sayt footer --- */
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: var(--surface-1);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+}
+.site-footer .footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.4rem 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.site-footer a { color: var(--muted); text-decoration: none; }
+.site-footer a:hover { color: var(--text); }
+.footer-links { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+
+/* --- Auth sahifalari --- */
+.auth-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.25rem;
+}
+.auth-card { width: 100%; max-width: 410px; }
+.auth-head { text-align: center; margin-bottom: 1.6rem; }
+.auth-head h1 { font-size: 1.7rem; font-weight: 750; letter-spacing: -0.02em; margin-bottom: 0.35rem; }
+.auth-head p { color: var(--muted); font-size: 0.92rem; }
+.auth-form { display: flex; flex-direction: column; gap: 1rem; }
+.auth-alert {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+  color: var(--danger);
+  border-radius: 11px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+}
+.auth-alt { text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 1.4rem; }
+.field-hint { font-size: 0.78rem; color: var(--muted); }
+
+/* --- Lobby (xonaga kirishdan oldin) --- */
+.lobby-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 1.4rem;
+  width: 100%;
+  max-width: 880px;
+  align-items: stretch;
+}
+.lobby-preview {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--border);
+  aspect-ratio: 16 / 10;
+  min-height: 240px;
+}
+.lobby-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* ko'zgu ko'rinish */
+}
+.lobby-preview .preview-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-0));
+  text-align: center;
+  padding: 1rem;
+}
+.lobby-preview .preview-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+}
+.lobby-preview .preview-controls button {
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--scrim);
+  color: #fff;
+  font-size: 1.1rem;
+  display: grid;
+  place-items: center;
+}
+.lobby-preview .preview-controls button.off { background: var(--danger); border-color: transparent; }
+.lobby-card { display: flex; flex-direction: column; gap: 1rem; justify-content: center; }
+.lobby-card h1 { font-size: 1.5rem; font-weight: 750; letter-spacing: -0.02em; }
+
+/* --- Umumiy mobil moslashuv (landing/auth/lobby) --- */
+@media (max-width: 760px) {
+  .hero { padding: 3rem 0 2rem; }
+  .hero-form { flex-direction: column; }
+  .hero-form .btn { width: 100%; }
+  .lobby-grid { grid-template-columns: 1fr; max-width: 460px; }
+  .lobby-preview { min-height: 200px; }
+  .site-footer .footer-inner { flex-direction: column; text-align: center; }
+  .nav-user { display: none; }
+}

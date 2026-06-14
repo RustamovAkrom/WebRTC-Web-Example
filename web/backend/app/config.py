@@ -62,14 +62,16 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> list[str]:
         if self.cors_origins.strip():
             return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        # Prod'da default YO'Q: kerakli originlarni CORS_ORIGINS ENV orqali bering.
+        # (Monolit deploy'da SPA backend bilan bir xil origin — CORS umuman shart emas.)
+        if self.is_prod:
+            return []
         # Dev defaultlari: Vite (5173) va nginx (8080).
         return [
             "http://localhost:5173",
             "http://localhost:8080",
             "http://127.0.0.1:5173",
             "http://127.0.0.1:8080",
-            "https://web-production-5ff6b.up.railway.app",  # Railway production
-            "wss://web-production-5ff6b.up.railway.app",
         ]
 
     def validate_for_prod(self) -> None:

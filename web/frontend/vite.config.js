@@ -7,6 +7,12 @@ import tailwindcss from "@tailwindcss/vite";
 // (CORS va cookie SameSite muammolari bo'lmaydi).
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    // Module-preload polyfill INLINE <script> chiqaradi — bu qat'iy CSP
+    // (script-src 'self') bilan bloklanadi. Zamonaviy brauzerlar uchun shart
+    // emas, shuning uchun o'chiramiz va CSP toza qoladi.
+    modulePreload: { polyfill: false },
+  },
   server: {
     port: 5173,
     proxy: {

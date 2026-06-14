@@ -26,7 +26,9 @@ const ICE_SERVERS = [
   // { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
 ];
 
-export function useWebRTC(room, name, getToken = null) {
+export function useWebRTC(room, name, getToken = null, opts = {}) {
+  // Lobby'da tanlangan boshlang'ich kamera/mikrofon holati (default: yoqilgan).
+  const { initialCamOn = true, initialMicOn = true } = opts;
   const [localStream, setLocalStream] = useState(null);
   // peers: { [peerId]: { name, stream } }
   const [peers, setPeers] = useState({});
@@ -501,6 +503,21 @@ export function useWebRTC(room, name, getToken = null) {
         setLocalStream(stream);
         if (!stream.getVideoTracks().length) applyCam(false);
         if (!stream.getAudioTracks().length) applyMic(false);
+        // Lobby'da kamera/mikrofon o'chirib qo'yilgan bo'lsa — shu holatda qo'shilamiz.
+        if (initialCamOn === false) {
+          const vt = stream.getVideoTracks()[0];
+          if (vt) {
+            vt.enabled = false;
+            applyCam(false);
+          }
+        }
+        if (initialMicOn === false) {
+          const at = stream.getAudioTracks()[0];
+          if (at) {
+            at.enabled = false;
+            applyMic(false);
+          }
+        }
         addAnalyser("self", stream); // o'z ovozimizni ham kuzatamiz
       } else {
         applyCam(false);
