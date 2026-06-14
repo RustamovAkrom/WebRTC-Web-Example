@@ -1,6 +1,30 @@
 @import "tailwindcss";
 
 /* Custom styles */
-body {
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+@layer base {
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent;
+  }
+
+  .card {
+    @apply bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-lg;
+  }
+
+  .text-primary {
+    @apply text-green-500;
+  }
 }
