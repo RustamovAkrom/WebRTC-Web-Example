@@ -1,39 +1,52 @@
-import { useState } from "react";
-import JoinScreen from "./components/JoinScreen.jsx";
-import Room from "./components/Room.jsx";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext.jsx";
-
-// URL'dan xona ID ni o'qiymiz (?room=...) — taklif havolasi orqali kirish uchun.
-function roomFromUrl() {
-  return new URLSearchParams(window.location.search).get("room") || "";
-}
+import LandingPage from "./pages/LandingPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import Room from "./components/Room.jsx";
 
 export default function App() {
   const { loading } = useAuth();
-  const [session, setSession] = useState(null); // { room, name }
 
-  const handleJoin = ({ room, name }) => {
-    // Brauzer manzilini xona bilan yangilaymiz, shunda havolani ulashish mumkin.
-    const url = `${window.location.pathname}?room=${encodeURIComponent(room)}`;
-    window.history.replaceState(null, "", url);
-    setSession({ room, name });
-  };
-
-  const handleLeave = () => {
-    setSession(null);
-  };
-
-  // Auth holati aniqlanmaguncha kutamiz (login bo'lganlar WS ticket'ni to'g'ri olishi uchun).
+  // Auth holati aniqlanmaguncha kutamiz
   if (loading) {
     return (
       <div className="join">
-        <div className="splash">Yuklanmoqda…</div>
+        <div className="splash">Yuklanmoqda...</div>
       </div>
     );
   }
 
-  if (!session) {
-    return <JoinScreen defaultRoom={roomFromUrl()} onJoin={handleJoin} />;
-  }
-  return <Room room={session.room} name={session.name} onLeave={handleLeave} />;
+  return (
+    <Router>
+      <Routes>
+        {/* Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* Authentication */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Room */}
+        <Route path="/room/:roomId" element={<RoomWrapper />} />
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  );
+}
+
+// Room wrapper - URL'dan room ID oladi
+function RoomWrapper() {
+  const { pathname } = window.location;
+  // /room/xyz -> xyz
+  const roomId = pathname.split("/room/")[1] || "";
+
+  return (
+    <Room
+      room={roomId}
+      onLeave={() => window.location.href = "/"}
+    />
+  );
 }

@@ -44,7 +44,8 @@ function CopyLinkButton({ room }) {
   );
 }
 
-export default function Room({ room, name, onLeave }) {
+export default function Room({ room, name: initialName, onLeave }) {
+  const [name, setName] = useState(initialName || "");
   const { getWsTicket, user } = useAuth();
   const { resolved, toggleTheme } = useTheme();
   const rtc = useWebRTC(room, name, getWsTicket);
