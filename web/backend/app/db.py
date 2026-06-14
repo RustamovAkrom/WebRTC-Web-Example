@@ -21,9 +21,9 @@ from app.config import get_settings
 settings = get_settings()
 
 # Database URL yo'q bo'lsa, engine yaratilmaydi (signaling P2P uchun shart emas)
-if settings.database_url:
+if settings.async_database_url:
     engine = create_async_engine(
-        settings.database_url,
+        settings.async_database_url,
         pool_size=5,
         max_overflow=10,
         pool_pre_ping=True,
@@ -34,7 +34,9 @@ else:
     engine = None
     SessionLocal = None
 
-print(f"📊 Database: {'configured' if settings.database_url else 'not configured (signaling only)'}")
+print(f"📊 Database: {'configured' if settings.async_database_url else 'not configured (signaling only)'}")
+if settings.database_url:
+    print(f"   URL: {settings.database_url[:50]}...")
 
 
 class Base(DeclarativeBase):

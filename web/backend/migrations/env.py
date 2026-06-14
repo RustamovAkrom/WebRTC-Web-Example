@@ -27,9 +27,9 @@ import app.models  # noqa: F401  (yon ta'sir uchun import)
 config = context.config
 
 # Sozlamadagi URL o'rniga ENV'dan kelgan haqiqiy URL'ni ishlatamiz.
-sqlalchemy_url = get_settings().database_url
-if sqlalchemy_url:
-    config.set_main_option("sqlalchemy.url", sqlalchemy_url)
+async_url = get_settings().async_database_url
+if async_url:
+    config.set_main_option("sqlalchemy.url", async_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

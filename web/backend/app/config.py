@@ -21,9 +21,20 @@ class Settings(BaseSettings):
     environment: str = "dev"
 
     # PostgreSQL ulanish manzili (async driver).
-    # Railway'da DATABASE_URL avtomatik beriladi.
-    # Default: localhost (dev mode uchun).
+    # Railway'da DATABASE_URL avtomatik beriladi (postgresql:// formatda).
+    # Biz uni postgresql+asyncpg:// formatga o'giramiz.
     database_url: str | None = None
+
+    @property
+    def async_database_url(self) -> str | None:
+        """DATABASE_URL'ni asyncpg formatiga o'giradi."""
+        if not self.database_url:
+            return None
+        url = self.database_url
+        # postgresql:// ni postgresql+asyncpg:// ga o'giramiz
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
 
     # JWT imzo kaliti. PROD'da albatta o'rnatilishi shart (pastdagi tekshiruv).
     jwt_secret: str = "dev-insecure-secret-change-me"
